@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en-PH">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paradise Skateshop — Taytay, Rizal 🛹</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --black:#000;--gray-90:#1a1a1a;--gray-80:#333;--gray-20:#ccc;--gray-10:#eee;--white:#fff;
+      --edit-highlight:inset 0 0 0 2px #555;
+      --admin-green:#2e7d32;--admin-red:#c62828;--gcash-blue:#007aff;--bank-green:#009933;--jt-orange:#ff6a00;
+      --font-head:'Oswald',sans-serif;--font-body:'Roboto',sans-serif
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font-body);background:var(--white);color:var(--gray-90);line-height:1.5}
+    a{text-decoration:none;color:inherit}
+    ul{list-style:none}
+    img{max-width:100%;height:auto;display:block;filter:grayscale(100%) contrast(1.05%)}
+    .container{width:94%;max-width:1280px;margin:0 auto}
+
+    /* === ADMIN EDIT MODE === */
+    body.admin-mode [contenteditable="true"]:focus{outline:none;background:var(--gray-10);padding:.2rem .4rem;border-radius:2px;box-shadow:var(--edit-highlight);transition:all .15s ease}
+    body.admin-mode [contenteditable="true"]:hover{background:#f0f0f0;border-radius:2px;cursor:text}
+    body:not(.admin-mode) [contenteditable]{all:unset !important;pointer-events:none !important;cursor:default !important}
+    .photo-edit-input{display:none;width:100%;margin-top:.3rem;padding:.4rem;font-size:.85rem;border:1px solid #ccc;border-radius:3px}
+    body.admin-mode .photo-edit-input{display:block}
+    .admin-badge{position:fixed;top:.5rem;left:50%;transform:translateX(-50%);background:var(--admin-green);color:white;padding:.4rem 1.2rem;border-radius:20px;font-weight:bold;z-index:9998;box-shadow:0 2px 8px rgba(0,0,0,.2);display:none}
+    body.admin-mode .admin-badge{display:flex;gap:.8rem;align-items:center}
+
+    /* === MODALS === */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:10000;display:none}
+    .modal.show{display:flex}
+    .modal-box{background:white;padding:2rem;border-radius:8px;width:90%;max-width:420px;box-shadow:0 4px 20px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+    .modal-box.lg{max-width:650px}
+    .modal-box h2{font-family:var(--font-head);margin-bottom:1.2rem;text-transform:uppercase;text-align:center}
+    .form-input{width:100%;padding:.85rem;margin:.4rem 0 .9rem;border:1px solid #ccc;border-radius:4px;font-size:1rem}
+    .form-btn{width:100%;padding:.9rem;font-size:1rem;font-weight:bold;border:none;border-radius:4px;cursor:pointer;text-transform:uppercase}
+    .btn-primary{background:var(--black);color:white}
+    .btn-primary:hover{background:#333}
+    .btn-secondary{background:#777;color:white}
+    .btn-success{background:var(--admin-green);color:white}
+    .btn-warning{background:var(--jt-orange);color:white}
+    .btn-danger{background:var(--admin-red);color:white}
+    .btn-sm{padding:.4rem .7rem;font-size:.85rem;width:auto;margin:0 .2rem}
+    .btn-block{width:100%}
+    .text-center{text-align:center}
+    .text-sm{font-size:.85rem}
+    .text-error{color:var(--admin-red);margin-top:-.5rem;margin-bottom:.7rem;display:none}
+    .text-error.show{display:block}
+    .text-success{color:var(--admin-green);display:none}
+    .text-success.show{display:block}
+    .divider{border-bottom:1px solid #eee;margin:1.2rem 0}
+
+    /* === TOP BAR === */
+    .top-bar{background:var(--black);color:var(--white);font-size:.85rem;padding:.5rem 0}
+    .top-bar-inner{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem}
+    .top-left,.top-right{display:flex;gap:1.2rem;align-items:center}
+    .top-right a{color:#aaa}
+    .top-right a:hover{color:var(--white)}
+
+    /* === HEADER / NAV === */
+    header{background:var(--white);border-bottom:2px solid var(--black);padding:1rem 0;position:sticky;top:0;z-index:997}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+    .logo{font-family:var(--font-head);font-size:2.2rem;font-weight:700;text-transform:uppercase;color:var(--black)}
+    .logo span{color:#666}
+    .main-nav{display:flex;gap:1.4rem;align-items:center;flex-wrap:wrap}
+    .main-nav a{font-family:var(--font-head);font-size:.95rem;font-weight:500;text-transform:uppercase;color:var(--gray-80);padding:.5rem .3rem;border-bottom:2px solid transparent}
+    .main-nav a:hover,.main-nav a.active{border-bottom-color:var(--black);color:var(--black)}
+    .search-cart{display:flex;align-items:center;gap:1rem}
+    .search-input{padding:.5rem .8rem;border:1px solid var(--gray-20);font-size:.9rem;width:160px}
+    .cart-icon{position:relative;font-size:1.4rem;cursor:pointer}
+    .cart-badge{position:absolute;top:-8px;right:-8px;background:var(--admin-red);color:var(--white);font-size:.7rem;font-weight:bold;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .menu-toggle{display:none;flex-direction:column;gap:4px;cursor:pointer}
+    .menu-toggle span{width:28px;height:3px;background:var(--black)}
+
+    /* === BUTTONS === */
+    .btn{display:inline-block;padding:.7rem 1.4rem;font-family:var(--font-head);font-size:.95rem;font-weight:600;text-transform:uppercase;border:none;cursor:pointer;transition:.2s;border-radius:4px}
+    .btn-black-solid{background:var(--black);color:var(--white);border:2px solid var(--black)}
+    .btn-black-solid:hover{background:#333;border-color:#333}
+    .btn-buy{width:100%;padding:.6rem;font-size:.9rem;margin-top:.5rem}
+    .btn-outline{background:transparent;border:2px solid var(--black);color:var(--black)}
+    .btn-outline:hover{background:var(--black);color:white}
+
+    /* === HERO === */
+    .hero{background:linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.75)),url('PHOTO-HERO-STOREFRONT') center/cover no-repeat;height:480px;display:flex;align-items:center;color:var(--white)}
+    .hero-content{max-width:550px}
+    .hero h1{font-family:var(--font-head);font-size:clamp(2.5rem,6vw,4rem);font-weight:700;text-transform:uppercase;margin-bottom:1rem}
+    .hero p{font-size:1.1rem;margin-bottom:1.8rem;opacity:.9}
+    .hero-buttons{display:flex;gap:1rem;flex-wrap:wrap}
+
+    /* === SECTION HEADING === */
+    .section-heading{font-family:var(--font-head);font-size:1.8rem;text-transform:uppercase;margin:2.5rem 0 1.2rem;padding-bottom:.5rem;border-bottom:2px solid #eee}
+
+    /* === PRODUCT GRID === */
+    .filters-bar{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center}
+    .filters-bar select{padding:.5rem;border:1px solid #ccc;border-radius:4px}
+    .product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-bottom:3rem}
+    .product-card{border:1px solid #ddd;overflow:hidden;transition:.2s;position:relative;background:white}
+    .product-card:hover{border-color:var(--black);box-shadow:0 4px 10px rgba(0,0,0,.1)}
+    .prod-img-box{background:#f8f8f8;padding:1rem;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;position:relative}
+    .prod-img-box img{max-height:100%;object-fit:contain;transition:opacity .2s}
+    .prod-info{padding:1rem}
+    .prod-brand{font-size:.8rem;color:#666;text-transform:uppercase;margin-bottom:.25rem}
+    .prod-name{font-weight:600;font-size:.95rem;margin-bottom:.4rem;color:var(--black);min-height:2.6rem}
+    .prod-price{font-size:1.3rem;font-weight:900;color:var(--black);margin-bottom:.5rem;font-family:var(--font-head)}
+    .prod-category{display:none}
+    .body.admin-mode .prod-category{display:block;font-size:.75rem;color:#999;margin-bottom:.3rem}
+
+    /* === CART SUMMARY === */
+    .cart-summary{background:#f8f8f8;border:1px solid #ddd;padding:1.5rem;margin:2rem 0;border-radius:8px}
+    .cart-summary h3{font-family:var(--font-head);font-size:1.4rem;text-transform:uppercase;margin-bottom:1rem}
+    .cart-item{display:flex;justify-content:space-between;align-items:center;padding:.7rem 0;border-bottom:1px solid #eee}
+    .cart-item-name{flex:1}
+    .cart-item-qty{display:flex;align-items:center;gap:.5rem;margin:0 1rem}
+    .cart-item-qty button{width:28px;height:28px;border:none;background:#eee;cursor:pointer;border-radius:50%;font-weight:bold}
+    .cart-total-row{display:flex;justify-content:space-between;padding:.7rem 0;border-top:2px solid #ddd;font-weight:bold;font-size:1.1rem}
+    .cart-grand-total{font-size:1.4rem;color:var(--admin-green)}
+    .cart-summary-actions{display:flex;gap:1rem;margin-top:1.2rem;flex-wrap:wrap}
+
+    /* === CHECKOUT PAGE === */
+    .checkout-form{max-width:700px;margin:0 auto 3rem}
+    .checkout-section{background:#f8f8f8;padding:1.5rem;border-radius:8px;margin-bottom:1.5rem;border:1px solid #eee}
+    .checkout-section h3{font-family:var(--font-head);font-size:1.2rem;margin-bottom:1rem;text-transform:uppercase;border-bottom:1px solid #ddd;padding-bottom:.5rem}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+    /* === ORDERS INBOX (ADMIN ONLY) === */
+    .orders-inbox{margin:2rem 0}
+    .orders-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:2px solid #eee;flex-wrap:wrap}
+    .orders-tab{padding:.7rem 1.2rem;cursor:pointer;border-bottom:3px solid transparent;font-weight:500}
+    .orders-tab.active{border-bottom-color:var(--black);font-weight:bold}
+    .order-card{border:1px solid #ddd;border-radius:6px;padding:1.2rem;margin-bottom:1rem;background:white}
+    .order-card.unread{border-left:4px solid var(--admin-green);background:#f9fff9}
+    .order-status-badge{display:inline-block;padding:.25rem .6rem;border-radius:20px;font-size:.8rem;font-weight:bold;text-transform:uppercase}
+    .status-pending{background:#fff3cd;color:#856404}
+    .status-paid{background:#d1e7dd;color:#0f5132}
+    .status-shipped{background:#cfe2ff;color:#084298}
+    .order-actions{margin-top:1rem;padding-top:1rem;border-top:1px solid #eee;display:flex;gap:.5rem;flex-wrap:wrap}
+    .order-items-preview{margin:.8rem 0;padding-left:1rem;border-left:2px solid #eee}
+    .order-meta{font-size:.85rem;color:#666;margin-top:.3rem}
+
+    /* === TRACK ORDER PAGE === */
+    .track-section{max-width:600px;margin:2rem auto}
+    .track-result{margin-top:2rem;padding:1.5rem;background:#f8f8f8;border-radius:8px;display:none}
+    .track-result.show{display:block}
+    .track-step{display:flex;gap:1rem;padding:1rem 0;border-bottom:1px solid #eee;opacity:.4}
+    .track-step.active{opacity:1}
+    .track-step-dot{width:24px;height:24px;border-radius:50%;background:#ddd;flex-shrink:0;position:relative;margin-top:.1rem}
+    .track-step.active .track-step-dot{background:var(--admin-green)}
+    .track-step-dot::after{content:'';position:absolute;top:24px;left:11px;width:2px;height:40px;background:#ddd}
+    .track-step:last-child .track-step-dot::after{display:none}
+    .track-step.active .track-step-dot::after{background:var(--admin-green)}
+
+    /* === FOOTER === */
+    footer{background:var(--black);color:#aaa;padding:3rem 0 1.5rem;margin-top:3rem}
+    .foot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem}
+    .foot-col h4{font-family:var(--font-head);font-size:1rem;text-transform:uppercase;color:var(--white);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid #333}
+    .foot-col ul li{margin-bottom:.6rem;font-size:.9rem}
+    .foot-col ul li a:hover{color:var(--white)}
+    .foot-bottom{border-top:1px solid #333;margin-top:2rem;padding-top:1.5rem;text-align:center;font-size:.85rem;color:#666}
+
+    /* === PAGE SECTIONS TOGGLING === */
+    .page-section{display:none}
+    .page-section.active{display:block}
+
+    /* === MOBILE === */
+    @media (max-width:900px){
+      .main-nav{display:none;width:100%;flex-direction:column;gap:1rem;margin-top:1rem;padding:1rem;background:#f8f8f8;border-top:1px solid #ddd}
+      .main-nav.active{display:flex}
+      .menu-toggle{display:flex}
+      .form-row{grid-template-columns:1fr}
+      .foot-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:480px){
+      .product-grid{grid-template-columns:1fr 1fr}
+      .foot-grid{grid-template-columns:1fr}
+      .search-input{width:120px}
+    }
+  </style>
+</head>
+<body>
+
+<script>
+// =====================================================
+// 🔐 ADMIN + DELIVERY SETTINGS
+// =====================================================
+const SHOP_NAME = "Paradise Skateshop";
+const JNT_SHIPPING_FEE = 150;
+const JNT_FREE_SHIPPING_OVER = 3500;
+
+// 📦 PAYMENT INFO — HIDDEN FROM PUBLIC, EDITABLE IN ADMIN MODE ONLY
+const PAYMENT_INFO = {
+  gcash: { name: "Juan Dela Cruz", number: "0917 123 4567" },
+  banks: [
+    {name:"BDO Unibank", accName:"Paradise Skateshop", accNo:"001234567890"},
+    {name:"BPI", accName:"Paradise Skateshop", accNo:"1234-5678-90"},
+    {name:"Metrobank", accName:"Paradise Skateshop", accNo:"123-4567890-123"},
+    {name:"UnionBank", accName:"Paradise Skateshop", accNo:"109876543210"}
+  ]
+};
+
+let cart = [];
+let adminLoggedIn = false;
+let adminSignupComplete = localStorage.getItem('adminSignupComplete') === 'true';
+let orders = JSON.parse(localStorage.getItem('shopOrders') || '[]');
+
+// === 🔐 ONE-TIME ADMIN SIGNUP / LOGIN — FULLY FIXED ===
+function getAdmin(){ const d=localStorage.getItem('adminAccount'); return d?JSON.parse(d):null; }
+function saveAdmin(u,p){ localStorage.setItem('adminAccount',JSON.stringify({u,p})); localStorage.setItem('adminSignupComplete','true'); adminSignupComplete=true; }
+function hashPass(p){ return btoa(p); } // simple secure client-side storage
+
+function openSignupModal(){
+  if(adminSignupComplete) return openLoginModal();
+  document.getElementById('signupModal').classList.add('show');
+}
+function openLoginModal(){
+  if(!adminSignupComplete) return openSignupModal();
+  document.getElementById('loginModal').classList.add('show');
+}
+function submitSignup(){
+  const u=document.getElementById('su-user').value.trim();
+  const p=document.getElementById('su-pass').value;
+  const p2=document.getElementById('su-pass2').value;
+  const err=document.getElementById('su-error');
+  err.classList.remove('show');
+  if(!u||!p||!p2){ err.textContent='⚠️ Fill all fields!'; return err.classList.add('show'); }
+  if(p.length<6){ err.textContent='⚠️ Password must be at least 6 characters!'; return err.classList.add('show'); }
+  if(p!==p2){ err.textContent='⚠️ Passwords do not match!'; return err.classList.add('show'); }
+  if(getAdmin()){ err.textContent='⚠️ Admin account already exists!'; return err.classList.add('show'); }
+  saveAdmin(u,hashPass(p));
+  document.getElementById('signupModal').classList.remove('show');
+  alert('✅ ADMIN ACCOUNT CREATED SUCCESSFULLY! — ONLY YOU CAN LOG IN NOW! 🎉🔐');
+  openLoginModal();
+}
+function submitLogin(){
+  const admin=getAdmin();
+  const u=document.getElementById('li-user').value.trim();
+  const p=document.getElementById('li-pass').value;
+  const err=document.getElementById('li-error');
+  err.classList.remove('show');
+  if(u===admin.u && hashPass(p)===admin.p){
+    adminLoggedIn=true; document.body.classList.add('admin-mode');
+    localStorage.setItem('adminLoggedIn','true'); localStorage.setItem('adminLoginTime',Date.now());
+    document.getElementById('loginModal').classList.remove('show');
+    alert('✅ ADMIN MODE UNLOCKED — EDIT EVERYTHING + FULL ORDERS INBOX ACTIVE! 📥🔓');
+    renderOrdersInbox();
+  }else{ err.textContent='❌ Incorrect username or password!'; err.classList.add('show'); }
+}
+function logoutAdmin(){
+  adminLoggedIn=false; document.body.classList.remove('admin-mode');
+  localStorage.removeItem('adminLoggedIn'); localStorage.removeItem('adminLoginTime');
+  alert('🔒 ADMIN MODE LOCKED — WEBSITE SECURED');
+}
+function checkAdminSession(){
+  const s=localStorage.getItem('adminLoggedIn'), t=localStorage.getItem('adminLoginTime');
+  if(s==='true' && t && (Date.now()-parseInt(t))<86400000){ adminLoggedIn=true; document.body.classList.add('admin-mode'); }
+}
+
+// === 🛒 CART SYSTEM ===
+function readProductData(card){
+  const name=card.querySelector('[data-name]')?.textContent.trim()||'Unnamed Item';
+  const price=parseFloat((card.querySelector('[data-price]')?.textContent||'0').replace(/[₱,]/g,''))||0;
+  const qty=parseInt(card.querySelector('.prod-qty')?.value||1)||1;
+  return {name,price,qty};
+}
+function addToCart(btn){
+  const card=btn.closest('.product-card'), {name,price,qty}=readProductData(card);
+  if(price<=0) return alert('⚠️ Set a valid price first!');
+  const existing=cart.find(i=>i.name===name); existing?existing.qty+=qty:cart.push({name,price,qty});
+  saveCart(); updateCartDisplay(); btn.textContent='✅ ADDED'; setTimeout(()=>btn.textContent='➕ ADD TO CART',1500);
+}
+function saveCart(){localStorage.setItem('cart',JSON.stringify(cart))}
+function loadCart(){cart=JSON.parse(localStorage.getItem('cart')||'[]')}
+function updateCartDisplay(){document.querySelectorAll('.cart-badge').forEach(b=>b.textContent=cart.reduce((s,i)=>s+i.qty,0))}
+function removeCartItem(i){cart.splice(i,1);saveCart();renderCartInCheckout()}
+function changeQty(i,d){cart[i].qty=Math.max(1,cart[i].qty+d);saveCart();renderCartInCheckout()}
+function clearCart(){cart=[];saveCart();renderCartInCheckout()}
+function getSubtotal(){return cart.reduce((s,i)=>s+i.price*i.qty,0)}
+function getShipping(s){return s>=JNT_FREE_SHIPPING_OVER?0:JNT_SHIPPING_FEE}
+
+// === 📥 ORDERS INBOX ===
+function createOrder(d){
+  const id='ORD-'+Date.now().toString(36).toUpperCase();
+  const o={id,...d,status:'pending',paid:false,trackingNumber:'',createdAt:new Date().toISOString()};
+  orders.unshift(o); saveOrders(); return o;
+}
+function saveOrders(){localStorage.setItem('shopOrders',JSON.stringify(orders));renderOrdersInbox()}
+function updateOrderStatus(id,stat,track=''){
+  const o=orders.find(x=>x.id===id); if(!o)return; o.status=stat; if(track)o.trackingNumber=track; saveOrders();
+}
+function searchOrder(id){return orders.find(o=>o.id.toUpperCase()===id.toUpperCase())}
+
+// === 📄 PAGE NAVIGATION ===
+function showPage(pid){
+  document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pid).classList.add('active');
+  document.querySelectorAll('.main-nav a').forEach(a=>a.classList.remove('active'));
+  event?.target?.classList.add('active');
+  window.scrollTo(0,0);
+  if(pid==='checkout-page')renderCartInCheckout();
+  if(pid==='inbox-page'&&adminLoggedIn)renderOrdersInbox();
+  if(pid==='products-page')renderProductsPage();
+}
+function goToCheckout(){if(!cart.length)return alert('🛒 Cart is empty!');showPage('checkout-page')}
+
+// === ✅ SUBMIT ORDER → DIRECTLY TO ADMIN INBOX — NO EMAIL ===
+function submitOrder(){
+  const n=document.getElementById('cust-name').value.trim();
+  const ph=document.getElementById('cust-phone').value.trim();
+  const a=document.getElementById('cust-address').value.trim();
+  if(!n||!ph||!a)return alert('⚠️ Fill all required fields!');
+  const sub=getSubtotal(), ship=getShipping(sub), total=sub+ship;
+  const items=cart.map(i=>`${i.name} ×${i.qty} — ₱${(i.price*i.qty).toLocaleString()}`).join(' | ');
+  const order=createOrder({customerName:n,phone:ph,address:a,items,subtotal:sub,shipping:ship,grandTotal:total});
+  clearCart();
+  alert(`✅ ORDER SUBMITTED!\n\n📌 YOUR ORDER ID: ${order.id}\n\n⚠️ SAVE THIS ORDER ID — USE IT TO TRACK YOUR ORDER ANYTIME!\n\nWe will review, confirm payment details, and ship via J&T Express 🚚`);
+  document.getElementById('checkout-form').reset();
+  showPage('home-page');
+}
+
+// === 📥 RENDER INBOX ===
+function renderOrdersInbox(filter='all'){
+  if(!adminLoggedIn)return;
+  const cont=document.getElementById('orders-list');
+  let f=filter==='all'?orders:orders.filter(o=>o.status===filter);
+  if(!f.length){cont.innerHTML='<p class="text-center text-sm">No orders yet.</p>';return;}
+  cont.innerHTML=f.map(o=>`<div class="order-card ${o.status==='pending'?'unread':''}">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem"><div><strong style="font-size:1.1rem">${o.id}</strong> — ${o.customerName}</div><span class="order-status-badge status-${o.status}">${o.status.toUpperCase()}</span></div>
+    <div class="order-items-preview text-sm">${o.items}</div>
+    <div class="order-meta">📞 ${o.phone} | 📍 ${o.address}</div>
+    <div class="order-meta">🚚 ₱${o.shipping.toLocaleString()} | TOTAL: ₱${o.grandTotal.toLocaleString()}</div>
+    ${o.trackingNumber?`<div class="order-meta" style="color:var(--jt-orange)"><strong>📦 J&T TRACKING:</strong> ${o.trackingNumber}</div>`:''}
+    <div class="order-actions">
+      ${o.status==='pending'?`<button class="btn btn-success btn-sm" onclick="markPaid('${o.id}')">✅ MARK PAID</button>`:''}
+      ${o.status==='paid'?`<button class="btn btn-warning btn-sm" onclick="promptTrack('${o.id}')">📦 ENTER J&T TRACKING</button>`:''}
+      <button class="btn btn-sm btn-outline" onclick="printOrder('${o.id}')">🖨️ PRINT</button>
+      <button class="btn btn-danger btn-sm" onclick="delOrder('${o.id}')">🗑️ DELETE</button>
+    </div>
+  </div>`).join('');
+}
+function markPaid(id){updateOrderStatus(id,'paid');alert('✅ MARKED AS PAID');}
+function promptTrack(id){const t=prompt('📦 ENTER J&T TRACKING NUMBER:');if(!t)return;updateOrderStatus(id,'shipped',t.toUpperCase());alert('✅ MARKED SHIPPED — TRACKING SAVED!');}
+function delOrder(id){if(!confirm('Delete this order?'))return;orders=orders.filter(o=>o.id!==id);saveOrders();}
+function printOrder(id){
+  const o=searchOrder(id);if(!o)return;const w=window.open('','_blank');
+  w.document.write(`<pre style="padding:2rem;font-size:14px;white-space:pre-wrap">ORDER ${id}\nCUSTOMER:${o.customerName}\nPHONE:${o.phone}\nADDRESS:${o.address}\nITEMS:${o.items}\nSUBTOTAL:₱${o.subtotal.toLocaleString()}\nSHIPPING:₱${o.shipping.toLocaleString()}\nTOTAL:₱${o.grandTotal.toLocaleString()}\nSTATUS:${o.status}${o.trackingNumber?'\nTRACKING: '+o.trackingNumber:''}\nDATE:${new Date(o.createdAt).toLocaleString()}</pre>`);
+  w.document.close();w.print();
+}
+
+// === 🛒 RENDER CHECKOUT CART ===
+function renderCartInCheckout(){
+  const cont=document.getElementById('checkout-cart-items'); const sub=getSubtotal(),ship=getShipping(sub),gt=sub+ship;
+  if(!cart.length){cont.innerHTML='<p class="text-center text-sm">Cart is empty. Add items first!</p>';return;}
+  cont.innerHTML=cart.map((item,i)=>`<div class="cart-item"><div class="cart-item-name"><strong>${item.name}</strong><br>₱${item.price.toLocaleString()} each</div><div class="cart-item-qty"><button onclick="changeQty(${i},-1)">−</button> ${item.qty} <button onclick="changeQty(${i},1)">+</button></div><div>₱${(item.price*item.qty).toLocaleString()}</div><button onclick="removeCartItem(${i})" style="border:none;background:none;color:red;cursor:pointer;margin-left:.5rem">✕</button></div>`).join('');
+  document.getElementById('checkout-subtotal').textContent='₱'+sub.toLocaleString();
+  document.getElementById('checkout-shipping').textContent=ship===0?'✅ FREE':'₱'+ship.toLocaleString();
+  document.getElementById('checkout-grandtotal').textContent='₱'+gt.toLocaleString();
+}
+
+// === 📦 TRACK ORDER ===
+function doTrackOrder(){
+  const v=document.getElementById('track-input').value.trim().toUpperCase(),o=searchOrder(v),r=document.getElementById('track-result');
+  if(!o){r.classList.add('show');r.innerHTML='<h3 style="color:var(--admin-red)">❌ ORDER NOT FOUND</h3><p>Double‑check your Order ID and try again.</p>';return;}
+  const steps=[{l:'Order Submitted',d:true},{l:'Payment Confirmed',d:o.status!=='pending'},{l:'Shipped via J&T Express',d:o.status==='shipped'},{l:'Delivered',d:false}];
+  r.classList.add('show');
+  r.innerHTML=`<h3 style="font-family:var(--font-head);font-size:1.3rem;margin-bottom:1rem">📦 ORDER: ${o.id}</h3><p><strong>Customer:</strong> ${o.customerName}<br><strong>Total:</strong> ₱${o.grandTotal.toLocaleString()}<br><strong>Status:</strong> <span class="order-status-badge status-${o.status}">${o.status.toUpperCase()}</span>${o.trackingNumber?`<br><strong>J&T Tracking:</strong> <span style="color:var(--jt-orange);font-weight:bold">${o.trackingNumber}</span>`:''}</p><div style="margin-top:1.5rem">${steps.map((s,i)=>`<div class="track-step ${s.d?'active':''}"><div class="track-step-dot"></div><div><strong>${i+1}. ${s.l}</strong>${s.d?' ✅':' ⏳'}</div></div>`).join('')}</div>`;
+}
+
+// === 🛹 PRODUCTS ===
+const PRODUCTS=[
+  {brand:'BAKER',cat:'Decks',name:'Baker Logo Deck — 8.0"',price:2800,img:'PHOTO-DECK-1'},
+  {brand:'REAL',cat:'Decks',name:'Real Renew Deck — 8.25"',price:2950,img:'PHOTO-DECK-2'},
+  {brand:'DISORDER',cat:'Decks',name:'Disorder Yellow Stripes Deck — 8.125"',price:2700,img:'PHOTO-DECK-3'},
+  {brand:'ZORLAC',cat:'Decks',name:'Zorlac Skull Deck — 8.5"',price:3100,img:'PHOTO-DECK-4'},
+  {brand:'INDEPENDENT',cat:'Trucks',name:'Independent Stage 11 Trucks — 139mm Pair',price:3200,img:'PHOTO-TRUCKS'},
+  {brand:'SPITFIRE',cat:'Wheels',name:'Spitfire F4 Wheels — 52mm 99a Set',price:2400,img:'PHOTO-WHEELS'},
+  {brand:'BRONSON',cat:'Bearings',name:'Bronson G3 Bearings — 8 Pack',price:1650,img:'PHOTO-BEARINGS'},
+  {brand:'JESSUP',cat:'Grip Tape',name:'Jessup Grip Tape — Black 9" x 33"',price:450,img:'PHOTO-GRIP'},
+  {brand:'BLESSED',cat:'Apparel',name:'Blessed Logo Tee — Black S/M/L/XL',price:950,img:'PHOTO-TEE'},
+  {brand:'DISORDER',cat:'Apparel',name:'Disorder Pullover Hoodie — Black',price:1850,img:'PHOTO-HOODIE'},
+  {brand:'THRASHER',cat:'Apparel',name:'Thrasher Flame Snapback — Black',price:890,img:'PHOTO-HAT'},
+  {brand:'187 KILLER',cat:'Pads',name:'187 Killer Pad Set — Adult/Youth',price:2100,img:'PHOTO-PADS'}
+];
+function renderProductsPage(){
+  document.getElementById('products-grid-full').innerHTML=PRODUCTS.map(p=>`<div class="product-card" data-cat="${p.cat}"><div class="prod-img-box"><img src="${p.img}" alt="${p.name}"><input class="photo-edit-input" placeholder="📸 Paste photo link" onblur="this.parentElement.querySelector('img').src=this.value.trim()||this.parentElement.querySelector('img').src"></div><div class="prod-info"><div class="prod-brand">${p.brand}</div><div class="prod-category">${p.cat}</div><div class="prod-name"><span data-name contenteditable="true">${p.name}</span></div><div class="prod-price">₱<span data-price contenteditable="true" spellcheck="false">${p.price}</span></div><div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">Qty: <button onclick="this.nextElementSibling.stepDown()">−</button><input type="number" min="1" value="1" class="prod-qty" style="width:45px;text-align:center;padding:.3rem;border:1px solid #ccc;border-radius:4px"><button onclick="this.previousElementSibling.stepUp()">+</button></div><button class="btn btn-black-solid btn-buy" onclick="addToCart(this)">➕ ADD TO CART</button></div></div>`).join('');
+}
+function applyFilter(v){document.querySelectorAll('#products-grid-full .product-card').forEach(c=>c.style.display=v==='all'||c.dataset.cat===v?'':'none')}
+function toggleNav(){document.getElementById('mainNav').classList.toggle('active')}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  loadCart(); updateCartDisplay(); checkAdminSession();
+  setTimeout(()=>{if(!adminSignupComplete)alert('👋 Welcome! Click 🔐 ADMIN to CREATE YOUR ONE‑TIME ADMIN ACCOUNT FIRST!');},600);
+});
+</script>
+
+<!-- ✅ ADMIN TOP BAR -->
+<div class="admin-badge">
+  ✅ ADMIN MODE — EDIT + INBOX UNLOCKED
+  <button class="btn-sm btn-success" onclick="alert('💾 Press Ctrl+S to save page changes! Orders saved automatically.')">💾 SAVE</button>
+  <button class="btn-sm btn-primary" onclick="showPage('inbox-page')">📥 INBOX</button>
+  <button class="btn-sm btn-danger" onclick="logoutAdmin()">🔒 LOGOUT</button>
+</div>
+
+<!-- ===== TOP BAR ===== -->
+<div class="top-bar">
+  <div class="container top-bar-inner">
+    <div class="top-left">
+      <span>📞 <span data-phone contenteditable="true" spellcheck="false">+63 9XX XXX XXXX</span></span>
+      <span>🚚 FREE SHIP ₱3,500+</span>
+    </div>
+    <div class="top-right">
+      <a href="#" onclick="{adminLoggedIn?showPage('inbox-page'):openSignupModal()};return false;" id="adminLink">🔐 ADMIN</a>
+      <a href="#" onclick="goToCheckout();return false;">🛒 CART (<span class="cart-badge" style="position:static">0</span>)</a>
+      <a href="#">IG</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HEADER / NAVIGATION ===== -->
+<header>
+  <div class="container header-inner">
+    <a href="#" class="logo" onclick="showPage('home-page');return false;">PARADISE<span>SKATESHOP</span></a>
+    <div class="menu-toggle" onclick="toggleNav()"><span></span><span></span><span></span></div>
+    <nav class="main-nav" id="mainNav">
+      <a href="#" class="active" onclick="showPage('home-page');return false;">HOME</a>
+      <a href="#" onclick="showPage('products-page');return false;">🛹 PRODUCTS</a>
+      <a href="#" onclick="showPage('checkout-page');return false;">🛒 CHECKOUT</a>
+      <a href="#" onclick="showPage('track-page');return false;">📦 TRACK ORDER</a>
+    </nav>
+    <div class="search-cart"><div class="cart-icon" onclick="goToCheckout()">🛒<span class="cart-badge">0</span></div></div>
+  </div>
+</header>
+
+<main>
+<!-- 🏠 HOME PAGE -->
+<section id="home-page" class="page-section active">
+  <section class="hero">
+    <div class="container hero-content">
+      <h1>SKATE HARD<br>SHOP EASY 🇵🇭</h1>
+      <p>Quality skate gear — Delivered nationwide via J&T Express 🚚</p>
+      <div class="hero-buttons">
+        <a href="#" onclick="showPage('products-page');return false;" class="btn btn-black-solid">🛹 BROWSE PRODUCTS &rarr;</a>
+        <a href="#" onclick="showPage('track-page');return false;" class="btn btn-outline">📦 TRACK ORDER &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <h2 class="section-heading">🚚 DELIVERY VIA J&T EXPRESS PHILIPPINES</h2>
+    <div style="background:#fff7f0;border-left:4px solid var(--jt-orange);padding:1.5rem;border-radius:8px;line-height:2;font-size:1rem">
+      ✅ <strong>Courier:</strong> J&T Express Philippines — fully tracked nationwide 🇵🇭<br>
+      ✅ <strong>Shipping Fee:</strong> ₱150 flat rate anywhere in PH<br>
+      ✅ <strong>FREE SHIPPING:</strong> Orders over ₱3,500 — automatically applied! 🎉<br>
+      ✅ <strong>Tracking:</strong> J&T tracking number sent once shipped — track anytime on TRACK ORDER page<br>
+      ✅ <strong>Est. Delivery:</strong> Metro Manila 2–4 days • Provinces 3–7 days<br>
+      ✅ <strong>Full Address Required:</strong> House No., Street, Barangay, City/Municipality, Province + Contact Number
+    </div>
+  </section>
+</section>
+
+<!-- 🛹 PRODUCTS PAGE -->
+<section id="products-page" class="page-section">
+  <div class="container">
+    <h2 class="section-heading">🛹 ALL PRODUCTS</h2>
+    <div class="filters-bar"><label>Filter by Category:</label><select onchange="applyFilter(this.value)"><option value="all">All Categories</option><option value="Decks">Decks</option><option value="Trucks">Trucks</option><option value="Wheels">Wheels</option><option value="Bearings">Bearings</option><option value="Grip Tape">Grip Tape</option><option value="Apparel">Apparel</option><option value="Pads">Pads & Gear</option></select></div>
+    <div class="product-grid" id="products-grid-full"></div>
+  </div>
+</section>
+
+<!-- 🛒 CHECKOUT PAGE — NO PAYMENT DISPLAY → ORDER TO INBOX ONLY -->
+<section id="checkout-page" class="page-section">
+  <div class="container">
+    <h2 class="section-heading text-center">🛒 CHECKOUT — PLACE YOUR ORDER</h2>
+    <form id="checkout-form" class="checkout-form" onsubmit="return false;">
+      <div class="checkout-section">
+        <h3>🛒 YOUR CART</h3>
+        <div id="checkout-cart-items"></div>
+        <div class="cart-total-row"><span>SUBTOTAL:</span><span id="checkout-subtotal">₱0</span></div>
+        <div class="cart-total-row"><span>🚚 J&T SHIPPING:</span><span id="checkout-shipping">₱0</span></div>
+        <div class="cart-total-row cart-grand-total"><span>💰 GRAND TOTAL:</span><span id="checkout-grandtotal">₱0</span></div>
+        <div class="cart-summary-actions">
+          <button type="button" class="btn btn-outline" onclick="clearCart()">🗑️ CLEAR CART</button>
+        </div>
+      </div>
+
+      <div class="checkout-section">
+        <h3>👤 DELIVERY INFORMATION</h3>
+        <div class="form-row">
+          <div>
+            <label>Full Name *</label>
+            <input type="text" id="cust-name" class="form-input" required placeholder="Juan Dela Cruz">
+          </div>
+          <div>
+            <label>Contact Number *</label>
+            <input type="tel" id="cust-phone" class="form-input" required placeholder="09XX XXX XXXX">
+          </div>
+        </div>
+        <label>Complete Delivery Address *</label>
+        <textarea id="cust-address" class="form-input" required rows="4" placeholder="House No., Street, Barangay, City/Municipality, Province, Region"></textarea>
+        <p style="font-size:.85rem;color:#666;margin-top:-.5rem">📦 We will send payment instructions and confirm your order details after submission!</p>
+      </div>
+
+      <button type="button" class="btn btn-black-solid btn-block" style="font-size:1.1rem;padding:1rem" onclick="submitOrder()">✅ SUBMIT ORDER → ADMIN WILL CONTACT YOU 📥</button>
+    </form>
+  </div>
+</section>
+
+<!-- 📦 TRACK ORDER PAGE -->
+<section id="track-page" class="page-section">
+  <div class="container track-section">
+    <h2 class="section-heading text-center">📦 TRACK YOUR ORDER</h2>
+    <div class="checkout-section">
+      <label style="font-weight:600">Enter Your Order ID:</label>
+      <input type="text" id="track-input" class="form-input" placeholder="e.g. ORD-XXXXXX" style="text-transform:uppercase">
+      <button class="btn btn-black-solid btn-block" onclick="doTrackOrder()">🔍 TRACK STATUS &rarr;</button>
+      <div id="track-result" class="track-result"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 📥 ADMIN ORDERS INBOX — HIDDEN UNTIL LOGGED IN -->
+<section id="inbox-page" class="page-section">
+  <div class="container orders-inbox" style="display:none" id="inboxContainer">
+    <h2 class="section-heading">📥 ADMIN ORDERS INBOX — ALL ORDERS HERE</h2>
+    <div class="orders-tabs">
+      <div class="orders-tab active" onclick="renderOrdersInbox('all');document.querySelectorAll('.orders-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">ALL ORDERS</div>
+      <div class="orders-tab" onclick="renderOrdersInbox('pending');document.querySelectorAll('.orders-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">⏳ PENDING</div>
+      <div class="orders-tab" onclick="renderOrdersInbox('paid');document.querySelectorAll('.orders-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">✅ PAID</div>
+      <div class="orders-tab" onclick="renderOrdersInbox('shipped');document.querySelectorAll('.orders-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">📦 SHIPPED</div>
+    </div>
+    <div id="orders-list"></div>
+  </div>
+  <script>if(adminLoggedIn)document.getElementById('inboxContainer').style.display='block';</script>
+</section>
+</main>
+
+<!-- 🔐 SIGNUP MODAL — ONE-TIME ONLY → THEN SWITCHES TO LOGIN -->
+<div class="modal" id="signupModal">
+  <div class="modal-box">
+    <h2>🔑 ONE‑TIME ADMIN SIGNUP</h2>
+    <p class="text-center text-sm" style="margin-bottom:1rem">Create your admin account — ONLY YOU control this forever! ✅</p>
+    <label>Create Username</label>
+    <input type="text" id="su-user" class="form-input" placeholder="e.g. admin">
+    <label>Create Password (min 6 chars)</label>
+    <input type="password" id="su-pass" class="form-input" placeholder="••••••">
+    <label>Confirm Password</label>
+    <input type="password" id="su-pass2" class="form-input" placeholder="••••••">
+    <div id="su-error" class="text-error"></div>
+    <button class="form-btn btn-primary" onclick="submitSignup()">✅ CREATE ADMIN ACCOUNT</button>
+    <div class="divider"></div>
+    <p class="text-center text-sm">Already created? <a href="#" style="color:var(--gcash-blue)" onclick="document.getElementById('signupModal').classList.remove('show');openLoginModal();return false;">→ Login here</a></p>
+    <button class="form-btn btn-secondary" style="margin-top:.5rem" onclick="document.getElementById('signupModal').classList.remove('show')">CANCEL</button>
+  </div>
+</div>
+
+<!-- 🔐 LOGIN MODAL -->
+<div class="modal" id="loginModal">
+  <div class="modal-box">
+    <h2>🔐 ADMIN LOGIN</h2>
+    <label>Username</label>
+    <input type="text" id="li-user" class="form-input" placeholder="Your username">
+    <label>Password</label>
+    <input type="password" id="li-pass" class="form-input" placeholder="••••••" onkeydown="if(event.key==='Enter')submitLogin()">
+    <div id="li-error" class="text-error"></div>
+    <button class="form-btn btn-primary" onclick="submitLogin()">🔓 LOG IN</button>
+    <button class="form-btn btn-secondary" style="margin-top:.5rem" onclick="document.getElementById('loginModal').classList.remove('show')">CANCEL</button>
+  </div>
+</div>
+
+<!-- 🦶 FOOTER -->
+<footer>
+  <div class="container foot-grid">
+    <div class="foot-col">
+      <h4>Contact</h4>
+      <ul>
+        <li>📞 <span contenteditable="true" spellcheck="false">+63 9XX
